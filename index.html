@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4択問題</title>
+  <style>
+    /* Google Fontsの読み込み */
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: #f5f5f5;
+    }
+    #container {
+      text-align: center;
+      background-color: #ffffff;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      width: 90%;
+    }
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      color: #3f51b5;
+      margin-bottom: 30px;
+    }
+    #question {
+      font-size: 20px;
+      font-weight: 400;
+      color: #333333;
+      margin-bottom: 20px;
+    }
+    #answer {
+      font-size: 18px;
+      font-weight: 400;
+      color: #666666;
+      margin-bottom: 30px;
+    }
+    button {
+      font-size: 16px;
+      font-weight: 400;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    #showQuestionBtn {
+      background-color: #3f51b5;
+      color: #ffffff;
+    }
+    #showQuestionBtn:hover {
+      background-color: #283593;
+    }
+    #showAnswerBtn {
+      background-color: #9e9e9e;
+      color: #ffffff;
+    }
+    #showAnswerBtn:hover {
+      background-color: #757575;
+    }
+    #choices button {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px; /* 選択肢の間隔 */
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #e0e0e0;
+      color: #333333;
+      text-align: left;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #choices button:hover {
+      background-color: #bdbdbd;
+    }
+  </style>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+  <div id="container">
+    <h1>4択問題</h1>
+    <div id="questionContainer">
+      <p id="question"></p>
+      <div id="choices"></div>
+      <p id="result" style="display: none;"></p>
+    </div>
+    <button id="showQuestionBtn" onclick="showQuestion()">次の問題</button>
+    <div id="scoreContainer" style="display: none;">
+      <p id="score"></p>
+      <button onclick="resetQuiz()">もう一度挑戦する</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+    {
+    "question": "簡単な方程式 $x + 5 = 9$ を解いてください。",
+    "choices": [
+      "$x = 2$",
+      "$x = 3$",
+      "$x = 4$",
+      "$x = 5$"
+    ],
+    "answer": "$x = 4$"
+  },
+  {
+    "question": "以下の方程式を解いてください。\\(3x^2 - 5x + 2 = 0\\)",
+    "choices": [
+      "$x = \\frac{5 \\pm \\sqrt{9}}{6}$",
+      "$x = \\frac{5 \\pm \\sqrt{25}}{6}$",
+      "$x = \\frac{5 \\pm \\sqrt{1}}{6}$",
+      "$x = \\frac{5 \\pm \\sqrt{-7}}{6}$"
+    ],
+    "answer": "$x = \\frac{5 \\pm \\sqrt{1}}{6}$"
+  }
+    ];
+
+    let currentIndex = 0;
+    let correctAnswers = 0;
+    const answeredQuestions = [];
+
+    function showQuestion() {
+      if (currentIndex >= questions.length) {
+        showScore();
+        return;
+      }
+
+      let selectedQuestion;
+      do {
+        selectedQuestion = questions[currentIndex];
+        currentIndex++;
+      } while (answeredQuestions.includes(selectedQuestion));
+
+      answeredQuestions.push(selectedQuestion);
+      document.getElementById('question').innerHTML = selectedQuestion.question;
+      document.getElementById('choices').innerHTML = '';
+      selectedQuestion.choices.forEach((choice, index) => {
+        const choiceElement = document.createElement('button');
+        choiceElement.innerHTML = `${index + 1}. ${choice}`;
+        choiceElement.onclick = () => checkAnswer(choice, selectedQuestion.answer);
+        document.getElementById('choices').appendChild(choiceElement);
+      });
+      document.getElementById('result').style.display = 'none';
+      MathJax.typeset();
+    }
+
+    function checkAnswer(selectedChoice, correctAnswer) {
+      const resultElement = document.getElementById('result');
+      if (selectedChoice === correctAnswer) {
+        resultElement.innerHTML = '正解！';
+        resultElement.style.color = 'green';
+        correctAnswers++;
+      } else {
+        resultElement.innerHTML = `不正解。正解は "${correctAnswer}" です。`;
+        resultElement.style.color = 'red';
+      }
+      resultElement.style.display = 'block';
+      MathJax.typeset();
+    }
+
+    function showScore() {
+      const scoreElement = document.getElementById('score');
+      const numQuestions = answeredQuestions.length;
+      const score = (correctAnswers / numQuestions) * 100;
+      scoreElement.innerHTML = `正答数: ${correctAnswers}/${numQuestions}<br>正答率: ${score.toFixed(2)}%`;
+      document.getElementById('scoreContainer').style.display = 'block';
+      document.getElementById('showQuestionBtn').style.display = 'none';
+    }
+
+    function resetQuiz() {
+      currentIndex = 0;
+      correctAnswers = 0;
+      answeredQuestions.length = 0;
+      document.getElementById('scoreContainer').style.display = 'none';
+      document.getElementById('showQuestionBtn').style.display = 'inline';
+      showQuestion();
+    }
+  </script>
+</body>
+</html>
